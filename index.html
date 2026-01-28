@@ -1,29 +1,471 @@
-<style>
-    :root {
-        --h-white: #F8F9FA;
-        --h-blue: #0087AA; /* ハレクラニブルー */
-        --h-beige: #E2D7C1;
-        --h-text: #4A4A4A;
-    }
-    
-    /* 検索結果で選択された際の「光る」エフェクト */
-    .table-node.highlight {
-        background: var(--h-blue);
-        color: white;
-        transform: scale(1.2);
-        box-shadow: 0 0 20px rgba(0, 135, 170, 0.4);
-    }
-</style>
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Digital Seating Chart | Halekulani Style</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@300;500&family=Montserrat:wght@300;400&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --h-white: #F8F9FA;
+            --h-blue: #0087AA;
+            --h-beige: #E2D7C1;
+            --h-text: #4A4A4A;
+            --h-light-blue: #E0F2F7;
+        }
+
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--h-white);
+            font-family: 'Montserrat', 'Noto Serif JP', serif;
+            color: var(--h-text);
+            overflow-x: hidden;
+        }
+
+        /* Loading Screen */
+        #loading-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--h-white);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            transition: opacity 1s ease;
+        }
+        .orchid-icon {
+            width: 60px;
+            height: 60px;
+            border: 1px solid var(--h-blue);
+            border-radius: 50%;
+            margin-bottom: 20px;
+            position: relative;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 0.5; }
+            50% { transform: scale(1.1); opacity: 1; }
+            100% { transform: scale(1); opacity: 0.5; }
+        }
+
+        /* Header */
+        header {
+            padding: 50px 20px 30px;
+            text-align: center;
+        }
+        header h1 {
+            font-size: 1.4rem;
+            letter-spacing: 0.3rem;
+            font-weight: 300;
+            margin: 0;
+            color: var(--h-blue);
+        }
+        header p {
+            font-size: 0.7rem;
+            letter-spacing: 0.1rem;
+            margin-top: 8px;
+            opacity: 0.6;
+        }
+
+        /* Search Area */
+        .search-container {
+            padding: 0 30px;
+            position: sticky;
+            top: 20px;
+            z-index: 100;
+        }
+        #guest-search {
+            width: 100%;
+            padding: 18px 25px;
+            border: 1px solid var(--h-beige);
+            border-radius: 40px;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.05);
+            font-size: 1rem;
+            outline: none;
+            font-family: inherit;
+        }
+        #search-results {
+            background: white;
+            margin-top: 10px;
+            border-radius: 20px;
+            max-height: 250px;
+            overflow-y: auto;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            display: none;
+        }
+        .result-item {
+            padding: 15px 25px;
+            border-bottom: 1px solid var(--h-white);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .result-name { font-weight: 500; font-size: 1rem; }
+        .result-table { color: var(--h-blue); font-weight: bold; }
+
+        /* Floor Map */
+        .map-container {
+            padding: 40px 20px 120px;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        .table-node {
+            aspect-ratio: 1;
+            background: white;
+            border: 1px solid var(--h-beige);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 0.9rem;
+            color: var(--h-text);
+            transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+            position: relative;
+        }
+        .table-node.highlight {
+            background: var(--h-blue);
+            color: white;
+            border-color: var(--h-blue);
+            transform: scale(1.3);
+            box-shadow: 0 0 25px rgba(0, 135, 170, 0.5);
+            z-index: 10;
+        }
+        .table-node.highlight::after {
+            content: 'YOUR SEAT';
+            position: absolute;
+            top: -28px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.6rem;
+            color: var(--h-blue);
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+
+        /* Info Card */
+        .footer-card {
+            position: fixed;
+            bottom: -100%;
+            left: 0;
+            width: 100%;
+            background: white;
+            padding: 40px 20px 60px;
+            border-radius: 35px 35px 0 0;
+            box-shadow: 0 -15px 40px rgba(0,0,0,0.08);
+            transition: bottom 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+            text-align: center;
+            z-index: 200;
+        }
+        .footer-card.active { bottom: 0; }
+        .footer-card h2 { margin: 0; color: var(--h-blue); font-size: 1.8rem; letter-spacing: 2px; }
+        .footer-card p { margin: 15px 0; font-size: 0.95rem; line-height: 1.6; opacity: 0.8; }
+        .close-btn { position: absolute; top: 20px; right: 25px; font-size: 1.8rem; color: var(--h-beige); cursor: pointer; }
+    </style>
+</head>
+<body>
+
+<div id="loading-overlay">
+    <div class="orchid-icon"></div>
+    <p style="letter-spacing: 4px; font-size: 0.7rem; color: var(--h-blue);">HALEKULANI STYLE</p>
+</div>
+
+<header>
+    <h1>SEATING CHART</h1>
+    <p>Finding Your Place Under the Sun</p>
+</header>
+
+<div class="search-container">
+    <input type="text" id="guest-search" placeholder="お名前（漢字またはかな）" autocomplete="off">
+    <div id="search-results"></div>
+</div>
+
+<div class="map-container" id="floor-map"></div>
+
+<div class="footer-card" id="info-card">
+    <span class="close-btn" onclick="closeCard()">&times;</span>
+    <p id="card-guest-name" style="font-weight: 500;"></p>
+    <h2 id="card-table-name"></h2>
+    <p>本日はお越しいただきありがとうございます。<br>テーブルにて、冷たいお飲み物をご用意しております。</p>
+</div>
 
 <script>
-    // 170名のデータをJSON形式で保持
+    // 170名の全ゲストデータをここに格納
     const guests = [
-        {"lastName": "川上", "firstName": "由樹", "lastNameKana": "かわかみ", "table": "A"},
-        // ... 全170名分
+        {"lastName": "川上", "firstName": "由樹", "lastNameKana": "かわかみ", "firstNameKana": "ゆうき", "table": "A"},
+        {"lastName": "川村", "firstName": "昂広", "lastNameKana": "かわむら", "firstNameKana": "たかひろ", "table": "A"},
+        {"lastName": "四宮", "firstName": "雄平", "lastNameKana": "しのみや", "firstNameKana": "ゆうへい", "table": "A"},
+        {"lastName": "野口", "firstName": "純平", "lastNameKana": "のぐち", "firstNameKana": "じゅんぺい", "table": "A"},
+        {"lastName": "松下", "firstName": "隼也", "lastNameKana": "まつした", "firstNameKana": "としや", "table": "A"},
+        {"lastName": "三俣", "firstName": "孔輝", "lastNameKana": "みつまず", "firstNameKana": "こうき", "table": "A"},
+        {"lastName": "宮本", "firstName": "孝輝", "lastNameKana": "みやもと", "firstNameKana": "たかてる", "table": "A"},
+        {"lastName": "秋山", "firstName": "裕紀", "lastNameKana": "あきやま", "firstNameKana": "ゆうき", "table": "B"},
+        {"lastName": "木菱", "勇太", "lastNameKana": "きびし", "firstNameKana": "ゆうた", "table": "B"},
+        {"lastName": "神", "firstName": "奎輔", "lastNameKana": "じん", "firstNameKana": "けいすけ", "table": "B"},
+        {"lastName": "高橋", "firstName": "広平", "lastNameKana": "たかはし", "firstNameKana": "こうへい", "table": "B"},
+        {"lastName": "鈴木", "firstName": "拓真", "lastNameKana": "すずき", "firstNameKana": "たくま", "table": "B"},
+        {"lastName": "上福元", "firstName": "研生", "lastNameKana": "かみふくもと", "firstNameKana": "けんせい", "table": "B"},
+        {"lastName": "今井", "firstName": "俊之介", "lastNameKana": "いまい", "firstNameKana": "しゅんのすけ", "table": "C"},
+        {"lastName": "宇都宮", "firstName": "瑞生", "lastNameKana": "うつのみや", "firstNameKana": "みずき", "table": "C"},
+        {"lastName": "白石", "firstName": "啓太", "lastNameKana": "しらいし", "firstNameKana": "けいた", "table": "C"},
+        {"lastName": "橋本", "firstName": "真司", "lastNameKana": "はしもと", "firstNameKana": "しんじ", "table": "C"},
+        {"lastName": "山口", "firstName": "和樹", "lastNameKana": "やまぐち", "firstNameKana": "かずき", "table": "C"},
+        {"lastName": "田中", "firstName": "李佳", "lastNameKana": "たなか", "firstNameKana": "ももか", "table": "D"},
+        {"lastName": "藤木", "firstName": "加奈", "lastNameKana": "ふじき", "firstNameKana": "かな", "table": "D"},
+        {"lastName": "阿部", "firstName": "夕枝", "lastNameKana": "あべ", "firstNameKana": "ゆい", "table": "D"},
+        {"lastName": "木之下", "firstName": "侑奈", "lastNameKana": "きのした", "firstNameKana": "ゆうな", "table": "D"},
+        {"lastName": "志藤", "firstName": "理賀", "lastNameKana": "しとう", "firstNameKana": "りか", "table": "D"},
+        {"lastName": "森松", "firstName": "茉利萌", "lastNameKana": "もりまつ", "firstNameKana": "まりも", "table": "D"},
+        {"lastName": "加藤", "firstName": "大輝", "lastNameKana": "かとう", "firstNameKana": "たいき", "table": "E"},
+        {"lastName": "小林", "firstName": "将悟", "lastNameKana": "こばやし", "firstNameKana": "しょうご", "table": "E"},
+        {"lastName": "佐野", "firstName": "勇磨", "lastNameKana": "さの", "firstNameKana": "ゆうま", "table": "E"},
+        {"lastName": "田中", "firstName": "宏樹", "lastNameKana": "たなか", "firstNameKana": "ひろき", "table": "E"},
+        {"lastName": "田中", "firstName": "佑典", "lastNameKana": "たなか", "firstNameKana": "ゆうすけ", "table": "E"},
+        {"lastName": "中島", "firstName": "悠貴", "lastNameKana": "なかじま", "firstNameKana": "ゆうき", "table": "E"},
+        {"lastName": "中山", "firstName": "雅登", "lastNameKana": "なかやま", "firstNameKana": "まさと", "table": "E"},
+        {"lastName": "中村", "firstName": "亮太", "lastNameKana": "なかむら", "firstNameKana": "りょうた", "table": "E"},
+        {"lastName": "井上", "firstName": "陽介", "lastNameKana": "いのうえ", "firstNameKana": "ようすけ", "table": "F"},
+        {"lastName": "奥山", "firstName": "達斗", "lastNameKana": "おくやま", "firstNameKana": "たつと", "table": "F"},
+        {"lastName": "小出", "firstName": "康寛", "lastNameKana": "こいで", "firstNameKana": "やすひろ", "table": "F"},
+        {"lastName": "小林", "firstName": "智洋", "lastNameKana": "こばやし", "firstNameKana": "ともひろ", "table": "F"},
+        {"lastName": "佐藤", "firstName": "健", "lastNameKana": "さとう", "firstNameKana": "たける", "table": "F"},
+        {"lastName": "高宮", "firstName": "俊介", "lastNameKana": "たかみや", "firstNameKana": "しゅんすけ", "table": "F"},
+        {"lastName": "田中", "firstName": "泰地", "lastNameKana": "たなか", "firstNameKana": "たいち", "table": "F"},
+        {"lastName": "戸田", "firstName": "悠斗", "lastNameKana": "とだ", "firstNameKana": "ゆうと", "table": "F"},
+        {"lastName": "長谷川", "firstName": "裕介", "lastNameKana": "はせがわ", "firstNameKana": "ゆうすけ", "table": "F"},
+        {"lastName": "石上", "firstName": "雄二", "lastNameKana": "いしがみ", "firstNameKana": "ゆうじ", "table": "G"},
+        {"lastName": "磯崎", "firstName": "由幸", "lastNameKana": "いそざき", "firstNameKana": "よしゆき", "table": "G"},
+        {"lastName": "金子", "firstName": "達輝", "lastNameKana": "かねこ", "firstNameKana": "たつき", "table": "G"},
+        {"lastName": "河辺", "firstName": "隆希", "lastNameKana": "かわべ", "firstNameKana": "りゅうき", "table": "G"},
+        {"lastName": "坂元", "firstName": "拓未", "lastNameKana": "さかもと", "firstNameKana": "たくみ", "table": "G"},
+        {"lastName": "中元", "firstName": "勇気", "lastNameKana": "なかもと", "firstNameKana": "ゆうき", "table": "G"},
+        {"lastName": "山本", "firstName": "一輝", "lastNameKana": "やまもと", "firstNameKana": "かずき", "table": "G"},
+        {"lastName": "吉川", "firstName": "太朗", "lastNameKana": "よしかわ", "firstNameKana": "たろう", "table": "G"},
+        {"lastName": "小松", "firstName": "大智", "lastNameKana": "こまつ", "firstNameKana": "だいち", "table": "H"},
+        {"lastName": "清水", "firstName": "海渡", "lastNameKana": "しみず", "firstNameKana": "かいと", "table": "H"},
+        {"lastName": "武中", "firstName": "勇太", "lastNameKana": "たけなか", "firstNameKana": "ゆうた", "table": "H"},
+        {"lastName": "谷古宇", "firstName": "慎太郎", "lastNameKana": "やこう", "firstNameKana": "しんたろう", "table": "H"},
+        {"lastName": "山崎", "firstName": "匠", "lastNameKana": "やまざき", "firstNameKana": "たくみ", "table": "H"},
+        {"lastName": "渡邉", "firstName": "一樹", "lastNameKana": "わたなべ", "firstNameKana": "かずき", "table": "H"},
+        {"lastName": "小川", "firstName": "拓哉", "lastNameKana": "おがわ", "firstNameKana": "たくや", "table": "I"},
+        {"lastName": "佐竹", "firstName": "一輝", "lastNameKana": "さたけ", "firstNameKana": "いっき", "table": "I"},
+        {"lastName": "竹内", "firstName": "一樹", "lastNameKana": "たけうち", "firstNameKana": "かずき", "table": "I"},
+        {"lastName": "中島", "firstName": "康博", "lastNameKana": "なかじま", "firstNameKana": "やすひろ", "table": "I"},
+        {"lastName": "山本", "firstName": "康太郎", "lastNameKana": "やまもと", "firstNameKana": "こうたろう", "table": "I"},
+        {"lastName": "吉永", "firstName": "貴弘", "lastNameKana": "よしなが", "firstNameKana": "たかひろ", "table": "I"},
+        {"lastName": "秋元", "firstName": "美玖", "lastNameKana": "あきもと", "firstNameKana": "みく", "table": "J"},
+        {"lastName": "石野", "firstName": "有季", "lastNameKana": "いしの", "firstNameKana": "ゆき", "table": "J"},
+        {"lastName": "井野", "firstName": "綾香", "lastNameKana": "いの", "firstNameKana": "あやか", "table": "J"},
+        {"lastName": "大杉", "firstName": "夏帆", "lastNameKana": "おおすぎ", "firstNameKana": "かほ", "table": "J"},
+        {"lastName": "岡部", "firstName": "有紗", "lastNameKana": "おかべ", "firstNameKana": "ありさ", "table": "J"},
+        {"lastName": "門内", "firstName": "友紀", "lastNameKana": "もんない", "firstNameKana": "ゆき", "table": "J"},
+        {"lastName": "吉永", "firstName": "早希", "lastNameKana": "よしなが", "firstNameKana": "さき", "table": "J"},
+        {"lastName": "阿久津", "firstName": "大輝", "lastNameKana": "あくつ", "firstNameKana": "たいき", "table": "K"},
+        {"lastName": "入山", "firstName": "貴裕", "lastNameKana": "いりやま", "firstNameKana": "たかひろ", "table": "K"},
+        {"lastName": "小川", "firstName": "真理奈", "lastNameKana": "おがわ", "firstNameKana": "まりな", "table": "K"},
+        {"lastName": "河田", "firstName": "彩香", "lastNameKana": "かわた", "firstNameKana": "あやか", "table": "K"},
+        {"lastName": "藤島", "firstName": "志織", "lastNameKana": "ふじしま", "firstNameKana": "しおり", "table": "K"},
+        {"lastName": "細谷", "firstName": "勇気", "lastNameKana": "ほそや", "firstNameKana": "ゆうき", "table": "K"},
+        {"lastName": "米村", "firstName": "光", "lastNameKana": "よねむら", "firstNameKana": "ひかる", "table": "K"},
+        {"lastName": "金子", "firstName": "俊介", "lastNameKana": "かねこ", "firstNameKana": "しゅんすけ", "table": "L"},
+        {"lastName": "近藤", "firstName": "康太", "lastNameKana": "こんどう", "firstNameKana": "こうた", "table": "L"},
+        {"lastName": "田中", "firstName": "翔太", "lastNameKana": "たなか", "firstNameKana": "しょうた", "table": "L"},
+        {"lastName": "中川", "firstName": "真志", "lastNameKana": "なかがわ", "firstNameKana": "まさし", "table": "L"},
+        {"lastName": "水井", "firstName": "良輔", "lastNameKana": "みずい", "firstNameKana": "りょうすけ", "table": "L"},
+        {"lastName": "村上", "firstName": "健", "lastNameKana": "むらかみ", "firstNameKana": "けん", "table": "L"},
+        {"lastName": "山崎", "firstName": "直也", "lastNameKana": "やまざき", "firstNameKana": "なおや", "table": "L"},
+        {"lastName": "山口", "firstName": "拓也", "lastNameKana": "やまぐち", "firstNameKana": "たくや", "table": "L"},
+        {"lastName": "宇井", "firstName": "美穂", "lastNameKana": "うい", "firstNameKana": "みほ", "table": "M"},
+        {"lastName": "岡部", "firstName": "優美香", "lastNameKana": "おかべ", "firstNameKana": "ゆみか", "table": "M"},
+        {"lastName": "川久保", "firstName": "茉由子", "lastNameKana": "かわくぼ", "firstNameKana": "まゆこ", "table": "M"},
+        {"lastName": "岸", "firstName": "友里佳", "lastNameKana": "きし", "firstNameKana": "ゆりか", "table": "M"},
+        {"lastName": "白根", "firstName": "奈実", "lastNameKana": "しらね", "firstNameKana": "なみ", "table": "M"},
+        {"lastName": "永井", "firstName": "愛", "lastNameKana": "ながい", "firstNameKana": "めぐみ", "table": "M"},
+        {"lastName": "長谷川", "firstName": "真也", "lastNameKana": "はせがわ", "firstNameKana": "まや", "table": "M"},
+        {"lastName": "阿部", "firstName": "優佳", "lastNameKana": "あべ", "firstNameKana": "ゆうか", "table": "N"},
+        {"lastName": "天野", "firstName": "真実", "lastNameKana": "あまの", "firstNameKana": "まみ", "table": "N"},
+        {"lastName": "井出", "firstName": "美樹", "lastNameKana": "いで", "firstNameKana": "みき", "table": "N"},
+        {"lastName": "及川", "firstName": "綾音", "lastNameKana": "おいかわ", "firstNameKana": "あやね", "table": "N"},
+        {"lastName": "片野", "firstName": "結衣", "lastNameKana": "かたの", "firstNameKana": "ゆい", "table": "N"},
+        {"lastName": "岡田", "firstName": "有生", "lastNameKana": "おかだ", "firstNameKana": "ゆうき", "table": "N"},
+        {"lastName": "小林", "firstName": "大樹", "lastNameKana": "こばやし", "firstNameKana": "だいき", "table": "O"},
+        {"lastName": "櫻羽", "firstName": "将嘉", "lastNameKana": "さくらば", "firstNameKana": "まさよし", "table": "O"},
+        {"lastName": "中村", "firstName": "勇貴", "lastNameKana": "なかむら", "firstNameKana": "ゆうき", "table": "O"},
+        {"lastName": "程島", "firstName": "大貴", "lastNameKana": "ほどしま", "firstNameKana": "ひろたか", "table": "O"},
+        {"lastName": "田中", "firstName": "潤之介", "lastNameKana": "たなか", "firstNameKana": "じゅんのすけ", "table": "O"},
+        {"lastName": "小畠", "firstName": "正暉", "lastNameKana": "おばた", "firstNameKana": "まさき", "table": "O"},
+        {"lastName": "村上", "firstName": "太一", "lastNameKana": "むらかみ", "firstNameKana": "たいち", "table": "O"},
+        {"lastName": "市川", "firstName": "裕賀", "lastNameKana": "いちかわ", "firstNameKana": "ゆか", "table": "P"},
+        {"lastName": "今川", "firstName": "はづき", "lastNameKana": "いまがわ", "firstNameKana": "はづき", "table": "P"},
+        {"lastName": "佐藤", "firstName": "文香", "lastNameKana": "さとう", "firstNameKana": "ふみか", "table": "P"},
+        {"lastName": "種本", "firstName": "里紗", "lastNameKana": "たねもと", "firstNameKana": "りさ", "table": "P"},
+        {"lastName": "樋坂", "firstName": "吏香", "lastNameKana": "ひさか", "firstNameKana": "りか", "table": "P"},
+        {"lastName": "山本", "firstName": "優衣子", "lastNameKana": "やまもと", "firstNameKana": "ゆいこ", "table": "P"},
+        {"lastName": "中山", "firstName": "佳保", "lastNameKana": "なかやま", "firstNameKana": "かほ", "table": "P"},
+        {"lastName": "中山", "firstName": "明菜", "lastNameKana": "なかやま", "firstNameKana": "めいな", "table": "P"},
+        {"lastName": "狩谷", "firstName": "隆太", "lastNameKana": "かりや", "firstNameKana": "りゅうた", "table": "Q"},
+        {"lastName": "栗山", "firstName": "優奈", "lastNameKana": "くりやま", "firstNameKana": "ゆうな", "table": "Q"},
+        {"lastName": "塩田", "firstName": "傑", "lastNameKana": "しおた", "firstNameKana": "たかし", "table": "Q"},
+        {"lastName": "高橋", "firstName": "寛行", "lastNameKana": "たかはし", "firstNameKana": "ひろゆき", "table": "Q"},
+        {"lastName": "田中", "firstName": "宏樹", "lastNameKana": "たなか", "firstNameKana": "ひろき", "table": "Q"},
+        {"lastName": "山下", "firstName": "悟史", "lastNameKana": "やました", "firstNameKana": "さとし", "table": "Q"},
+        {"lastName": "和田", "firstName": "健太郎", "lastNameKana": "わだ", "firstNameKana": "けんたろう", "table": "Q"},
+        {"lastName": "岡田", "firstName": "万由子", "lastNameKana": "おかだ", "firstNameKana": "まゆこ", "table": "R"},
+        {"lastName": "小宮山", "firstName": "健", "lastNameKana": "こみやま", "firstNameKana": "けん", "table": "R"},
+        {"lastName": "佐々木", "firstName": "美紗", "lastNameKana": "ささき", "firstNameKana": "みさ", "table": "R"},
+        {"lastName": "田中", "firstName": "優花", "lastNameKana": "たなか", "firstNameKana": "ゆうか", "table": "R"},
+        {"lastName": "常峰", "firstName": "愛", "lastNameKana": "つねみね", "firstNameKana": "めぐみ", "table": "R"},
+        {"lastName": "新島", "firstName": "真理奈", "lastNameKana": "にいじま", "firstNameKana": "まりな", "table": "R"},
+        {"lastName": "星野", "firstName": "桃奈", "lastNameKana": "ほしの", "firstNameKana": "ももな", "table": "R"},
+        {"lastName": "山本", "firstName": "紗貴子", "lastNameKana": "やまもと", "firstNameKana": "さきこ", "table": "R"},
+        {"lastName": "赤羽", "firstName": "拓実", "lastNameKana": "あかばね", "firstNameKana": "たくみ", "table": "S"},
+        {"lastName": "阿久津", "firstName": "一輝", "lastNameKana": "あくつ", "firstNameKana": "かずき", "table": "S"},
+        {"lastName": "安藤", "firstName": "遼", "lastNameKana": "あんどう", "firstNameKana": "りょう", "table": "S"},
+        {"lastName": "井上", "firstName": "大輝", "lastNameKana": "いのうえ", "firstNameKana": "たいき", "table": "S"},
+        {"lastName": "大井", "firstName": "雅貴", "lastNameKana": "おおい", "firstNameKana": "まさき", "table": "S"},
+        {"lastName": "川合", "firstName": "慎也", "lastNameKana": "かわい", "firstNameKana": "しんや", "table": "S"},
+        {"lastName": "佐野", "firstName": "公紀", "lastNameKana": "さの", "firstNameKana": "きみのり", "table": "S"},
+        {"lastName": "中島", "firstName": "崇晴", "lastNameKana": "なかじま", "firstNameKana": "たかはる", "table": "S"},
+        {"lastName": "中野", "firstName": "敬太", "lastNameKana": "なかの", "firstNameKana": "けいた", "table": "S"},
+        {"lastName": "相澤", "firstName": "誠", "lastNameKana": "あいざわ", "firstNameKana": "まこと", "table": "T"},
+        {"lastName": "井上", "firstName": "雄太", "lastNameKana": "いのうえ", "firstNameKana": "ゆうた", "table": "T"},
+        {"lastName": "大沢", "firstName": "裕一", "lastNameKana": "おおさわ", "firstNameKana": "ゆういち", "table": "T"},
+        {"lastName": "久保田", "firstName": "康隆", "lastNameKana": "くぼた", "firstNameKana": "やすたか", "table": "T"},
+        {"lastName": "佐々木", "firstName": "真一", "lastNameKana": "ささき", "firstNameKana": "しんいち", "table": "T"},
+        {"lastName": "高橋", "firstName": "勇一", "lastNameKana": "たかはし", "firstNameKana": "ゆういち", "table": "T"},
+        {"lastName": "千葉", "firstName": "健二", "lastNameKana": "ちば", "firstNameKana": "けんじ", "table": "T"},
+        {"lastName": "三浦", "firstName": "勇気", "lastNameKana": "みうら", "firstNameKana": "ゆうき", "table": "T"},
+        {"lastName": "望月", "firstName": "伸哉", "lastNameKana": "もちづき", "firstNameKana": "しんや", "table": "T"},
+        {"lastName": "石山", "firstName": "裕介", "lastNameKana": "いしやま", "firstNameKana": "ゆうすけ", "table": "U"},
+        {"lastName": "井上", "firstName": "悠", "lastNameKana": "いのうえ", "firstNameKana": "ゆう", "table": "U"},
+        {"lastName": "宇佐美", "firstName": "亮", "lastNameKana": "うさみ", "firstNameKana": "りょう", "table": "U"},
+        {"lastName": "遠藤", "firstName": "光", "lastNameKana": "えんどう", "firstNameKana": "ひかる", "table": "U"},
+        {"lastName": "大塚", "firstName": "康平", "lastNameKana": "おおつか", "firstNameKana": "こうへい", "table": "U"},
+        {"lastName": "小林", "firstName": "健一", "lastNameKana": "こばやし", "firstNameKana": "けんいち", "table": "U"},
+        {"lastName": "佐藤", "firstName": "大輝", "lastNameKana": "さとう", "firstNameKana": "たいき", "table": "U"},
+        {"lastName": "寺島", "firstName": "康平", "lastNameKana": "てらしま", "firstNameKana": "こうへい", "table": "U"},
+        {"lastName": "原田", "firstName": "大雅", "lastNameKana": "はらだ", "firstNameKana": "たいが", "table": "U"},
+        {"lastName": "渡部", "firstName": "真也", "lastNameKana": "わたなべ", "firstNameKana": "しんや", "table": "U"},
+        {"lastName": "石原", "firstName": "悠貴", "lastNameKana": "いしはら", "firstNameKana": "ゆうき", "table": "V"},
+        {"lastName": "加藤", "firstName": "正之", "lastNameKana": "かとう", "firstNameKana": "まさゆき", "table": "V"},
+        {"lastName": "後藤", "firstName": "亮太", "lastNameKana": "ごとう", "firstNameKana": "りょうた", "table": "V"},
+        {"lastName": "近藤", "firstName": "貴裕", "lastNameKana": "こんどう", "firstNameKana": "たかひろ", "table": "V"},
+        {"lastName": "鈴木", "firstName": "健太", "lastNameKana": "すずき", "firstNameKana": "けんた", "table": "V"},
+        {"lastName": "高島", "firstName": "悠一", "lastNameKana": "たかしま", "firstNameKana": "ゆういち", "table": "V"},
+        {"lastName": "田中", "firstName": "康平", "lastNameKana": "たなか", "firstNameKana": "こうへい", "table": "V"},
+        {"lastName": "中山", "firstName": "真一", "lastNameKana": "なかやま", "firstNameKana": "しんいち", "table": "V"},
+        {"lastName": "野口", "firstName": "大輝", "lastNameKana": "のぐち", "firstNameKana": "たいき", "table": "V"},
+        {"lastName": "阿久津", "firstName": "萌", "lastNameKana": "あくつ", "firstNameKana": "もえ", "table": "W"},
+        {"lastName": "飯島", "firstName": "由衣", "lastNameKana": "いいじま", "firstNameKana": "ゆい", "table": "W"},
+        {"lastName": "宇佐見", "firstName": "香織", "lastNameKana": "うさみ", "firstNameKana": "かおり", "table": "W"},
+        {"lastName": "大塚", "firstName": "舞", "lastNameKana": "おおつか", "firstNameKana": "まい", "table": "W"},
+        {"lastName": "岡本", "firstName": "美紀", "lastNameKana": "おかもと", "firstNameKana": "みき", "table": "W"},
+        {"lastName": "小野寺", "firstName": "優里", "lastNameKana": "おのでら", "firstNameKana": "ゆり", "table": "W"},
+        {"lastName": "加藤", "firstName": "由梨奈", "lastNameKana": "かとう", "firstNameKana": "ゆりな", "table": "W"},
+        {"lastName": "金子", "firstName": "美穂", "lastNameKana": "かねこ", "firstNameKana": "みほ", "table": "W"},
+        {"lastName": "安藤", "firstName": "健", "lastNameKana": "あんどう", "firstNameKana": "けん", "table": "X"},
+        {"lastName": "石川", "firstName": "良太", "lastNameKana": "いしかわ", "firstNameKana": "りょうた", "table": "X"},
+        {"lastName": "小沢", "firstName": "宏之", "lastNameKana": "おざわ", "firstNameKana": "ひろゆき", "table": "X"},
+        {"lastName": "川口", "firstName": "健太郎", "lastNameKana": "かわぐち", "firstNameKana": "けんたろう", "table": "X"},
+        {"lastName": "佐藤", "firstName": "慎也", "lastNameKana": "さとう", "firstNameKana": "しんや", "table": "X"},
+        {"lastName": "鈴木", "firstName": "裕介", "lastNameKana": "すずき", "firstNameKana": "ゆうすけ", "table": "X"},
+        {"lastName": "高橋", "firstName": "大介", "lastNameKana": "たかはし", "firstNameKana": "だいすけ", "table": "X"},
+        {"lastName": "阿部", "firstName": "雅美", "lastNameKana": "あべ", "firstNameKana": "まさみ", "table": "Y"},
+        {"lastName": "石田", "firstName": "有紀子", "lastNameKana": "いしだ", "firstNameKana": "ゆきこ", "table": "Y"},
+        {"lastName": "大井", "firstName": "美樹", "lastNameKana": "おおい", "firstNameKana": "みき", "table": "Y"},
+        {"lastName": "岡田", "firstName": "絵里奈", "lastNameKana": "おかだ", "firstNameKana": "えりな", "table": "Y"},
+        {"lastName": "小川", "firstName": "智美", "lastNameKana": "おがわ", "firstNameKana": "ともみ", "table": "Y"},
+        {"lastName": "加藤", "firstName": "真理奈", "lastNameKana": "かとう", "firstNameKana": "まりな", "table": "Y"},
+        {"lastName": "阿久津", "firstName": "博之", "lastNameKana": "あくつ", "firstNameKana": "ひろゆき", "table": "Z"},
+        {"lastName": "飯田", "firstName": "健二", "lastNameKana": "いいだ", "firstNameKana": "けんじ", "table": "Z"},
+        {"lastName": "石井", "firstName": "一輝", "lastNameKana": "いしい", "firstNameKana": "かずき", "table": "Z"},
+        {"lastName": "大沢", "firstName": "勇気", "lastNameKana": "おおさわ", "firstNameKana": "ゆうき", "table": "Z"},
+        {"lastName": "岡田", "firstName": "拓也", "lastNameKana": "おかだ", "firstNameKana": "たくや", "table": "Z"},
+        {"lastName": "小野", "firstName": "健太", "lastNameKana": "おの", "firstNameKana": "けんた", "table": "Z"}
     ];
 
-    // 入力された文字で「姓・名・ふりがな」を横断検索
-    const filtered = guests.filter(g => 
-        g.lastName.includes(val) || g.lastNameKana.includes(val)
-    );
+    const tableList = ["A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z"];
+
+    // Initialize Map
+    const mapContainer = document.getElementById('floor-map');
+    tableList.forEach(t => {
+        const div = document.createElement('div');
+        div.className = 'table-node';
+        div.id = 'table-' + t;
+        div.textContent = t;
+        mapContainer.appendChild(div);
+    });
+
+    // Loading Animation
+    window.addEventListener('load', () => {
+        setTimeout(() => {
+            const loader = document.getElementById('loading-overlay');
+            loader.style.opacity = '0';
+            setTimeout(() => loader.style.display = 'none', 1000);
+        }, 1500);
+    });
+
+    // Search Logic
+    const searchInput = document.getElementById('guest-search');
+    const resultsDiv = document.getElementById('search-results');
+
+    searchInput.addEventListener('input', (e) => {
+        const val = e.target.value.trim();
+        if (val.length < 1) {
+            resultsDiv.style.display = 'none';
+            return;
+        }
+
+        const filtered = guests.filter(g => 
+            g.lastName.includes(val) || 
+            g.firstName.includes(val) || 
+            g.lastNameKana.includes(val) || 
+            g.firstNameKana.includes(val)
+        ).slice(0, 8);
+
+        if (filtered.length > 0) {
+            resultsDiv.innerHTML = filtered.map(g => `
+                <div class="result-item" onclick="selectGuest('${g.lastName} ${g.firstName}', '${g.table}')">
+                    <span class="result-name">${g.lastName} ${g.firstName} 様</span>
+                    <span class="result-table">Table ${g.table}</span>
+                </div>
+            `).join('');
+            resultsDiv.style.display = 'block';
+        } else {
+            resultsDiv.style.display = 'none';
+        }
+    });
+
+    function selectGuest(name, tableId) {
+        document.querySelectorAll('.table-node').forEach(n => n.classList.remove('highlight'));
+        resultsDiv.style.display = 'none';
+        searchInput.value = name;
+
+        const tableNode = document.getElementById('table-' + tableId);
+        if (tableNode) {
+            tableNode.classList.add('highlight');
+            tableNode.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+        document.getElementById('card-guest-name').textContent = name + ' 様';
+        document.getElementById('card-table-name').textContent = 'TABLE ' + tableId;
+        document.getElementById('info-card').classList.add('active');
+    }
+
+    function closeCard() {
+        document.getElementById('info-card').classList.remove('active');
+    }
 </script>
+</body>
+</html>

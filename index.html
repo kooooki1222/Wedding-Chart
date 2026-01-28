@@ -1,0 +1,29 @@
+<style>
+    :root {
+        --h-white: #F8F9FA;
+        --h-blue: #0087AA; /* ハレクラニブルー */
+        --h-beige: #E2D7C1;
+        --h-text: #4A4A4A;
+    }
+    
+    /* 検索結果で選択された際の「光る」エフェクト */
+    .table-node.highlight {
+        background: var(--h-blue);
+        color: white;
+        transform: scale(1.2);
+        box-shadow: 0 0 20px rgba(0, 135, 170, 0.4);
+    }
+</style>
+
+<script>
+    // 170名のデータをJSON形式で保持
+    const guests = [
+        {"lastName": "川上", "firstName": "由樹", "lastNameKana": "かわかみ", "table": "A"},
+        // ... 全170名分
+    ];
+
+    // 入力された文字で「姓・名・ふりがな」を横断検索
+    const filtered = guests.filter(g => 
+        g.lastName.includes(val) || g.lastNameKana.includes(val)
+    );
+</script>

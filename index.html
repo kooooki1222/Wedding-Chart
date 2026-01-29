@@ -86,40 +86,10 @@
         }
         .card-overlay.active { bottom: 0; }
         .close-btn { color: var(--h-gold); font-size: 0.7rem; margin-top: 20px; cursor: pointer; display: block; }
-    /* ローディング画面のスタイル */
-        #loading-overlay {
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background: var(--bg-color);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 9999;
-            transition: opacity 0.8s ease;
-        }
-
-        .loading-title {
-            font-size: 1.2rem;
-            letter-spacing: 0.5rem;
-            color: var(--h-blue);
-            font-weight: 300;
-            animation: pulse 2s infinite ease-in-out;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 0.3; }
-            50% { opacity: 1; }
-        }    
     </style>
 </head>
 <body>
-    <div id="loading-overlay">
-        <div class="loading-title">HALEKULANI STYLE</div>
-    </div>
-    <div id="loading-overlay"><div class="orchid-icon"></div><p style="letter-spacing:3px;font-size:0.9rem;color:var(--h-blue);">Welcome to our wedding ~KOKI & YUKI~</p></div>
-
+    <div id="loading-overlay"><div class="orchid-icon"></div><p style="letter-spacing:3px;font-size:0.9rem;color:var(--h-blue);">Welcome to our wedding party ~ KOKI & YUKI ~</p></div>
     <header>
         <h1>Seating Chart</h1>
     </header>
@@ -239,22 +209,8 @@
         }
 
         function closeCard() { document.getElementById('info-card').classList.remove('active'); }
-        // ページ読み込み完了後にローディング画面を消す処理
-        window.addEventListener('load', function() {
-            setTimeout(() => {
-                const loader = document.getElementById('loading-overlay');
-                if (loader) {
-                    loader.style.opacity = '0';
-                    setTimeout(() => {
-                        loader.style.display = 'none';
-                    }, 800);
-                }
-            }, 2000); // 2秒間表示
-        });
     </script>
 </body>
 </html>
-
-
 
 

@@ -3,143 +3,130 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Wedding Seating Chart</title>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@300;500&family=Montserrat:wght@300;400&display=swap" rel="stylesheet">
+    <title>Wedding Seating Chart | Halekulani Style</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@300;500&family=Montserrat:wght@200;400&display=swap" rel="stylesheet">
     <style>
-        :root { --h-white: #F8F9FA; --h-blue: #0087AA; --h-beige: #E2D7C1; --h-text: #4A4A4A; }
+        :root {
+            --h-white: #FDFDFD;
+            --h-blue: #0087AA;
+            --h-beige: #E2D7C1;
+            --h-text: #333333;
+            --glass: rgba(255, 255, 255, 0.7);
+        }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { margin: 0; padding: 0; background-color: var(--h-white); font-family: 'Montserrat', 'Noto Serif JP', serif; color: var(--h-text); overflow-x: hidden; }
-        
-        #loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--h-white); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 1000; transition: opacity 0.5s ease; }
-        .orchid-icon { width: 50px; height: 50px; border: 2px solid var(--h-blue); border-radius: 50%; margin-bottom: 20px; animation: pulse 1.5s infinite; }
-        @keyframes pulse { 0% { opacity: 0.3; } 50% { opacity: 1; } 100% { opacity: 0.3; } }
-        
-        header { padding: 40px 20px 10px; text-align: center; }
-        header h1 { font-size: 1.1rem; letter-spacing: 0.3rem; font-weight: 300; color: var(--h-blue); margin: 0; }
-        
-        .search-container { padding: 0 25px; position: sticky; top: 15px; z-index: 100; margin-bottom: 30px; }
-        #guest-search { width: 100%; padding: 15px 20px; border: 1px solid var(--h-beige); border-radius: 30px; font-size: 1rem; outline: none; background: white; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
-        #search-results { background: white; margin-top: 8px; border-radius: 15px; max-height: 250px; overflow-y: auto; box-shadow: 0 10px 25px rgba(0,0,0,0.1); display: none; }
-        .result-item { padding: 15px 20px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; }
-
-        .map-section { max-width: 600px; margin: 0 auto; padding: 0 10px 120px; }
-        .main-table { width: 50%; margin: 0 auto 50px; padding: 10px; border: 1px solid var(--h-blue); color: var(--h-blue); text-align: center; font-size: 0.7rem; letter-spacing: 4px; background: white; }
-        .main-table::after { content: "MAIN TABLE"; }
-
-        /* 列（Row）ごとの設定 */
-        .table-row { display: flex; justify-content: center; gap: 10px; margin-bottom: 25px; flex-wrap: wrap; }
-        .row-label { width: 100%; text-align: center; font-size: 0.6rem; color: var(--h-beige); margin-bottom: 8px; letter-spacing: 1px; }
-
-        .table-node { 
-            width: 50px; height: 50px; background: white; border: 1px solid var(--h-beige); 
-            border-radius: 50%; display: flex; justify-content: center; align-items: center; 
-            font-size: 0.8rem; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-        .table-node.highlight { 
-            background: var(--h-blue); color: white; transform: scale(1.3); 
-            box-shadow: 0 0 20px rgba(0, 135, 170, 0.5); z-index: 10; border-color: var(--h-blue); 
-        }
-
-        .footer-card { position: fixed; bottom: -100%; left: 0; width: 100%; background: white; padding: 40px 20px; border-radius: 25px 25px 0 0; box-shadow: 0 -10px 30px rgba(0,0,0,0.1); transition: bottom 0.5s ease; text-align: center; z-index: 200; }
+        body { margin: 0; padding: 0; background: linear-gradient(135deg, #f8f9fa 0%, #e0f2f7 100%); font-family: 'Montserrat', 'Noto Serif JP', serif; color: var(--h-text); min-height: 100vh; }
+        #loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--h-white); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 1000; transition: opacity 0.8s ease; }
+        .orchid-icon { width: 40px; height: 40px; border: 1px solid var(--h-blue); border-radius: 50%; margin-bottom: 20px; position: relative; }
+        .orchid-icon::after { content: ""; position: absolute; top: -5px; left: -5px; right: -5px; bottom: -5px; border: 1px solid var(--h-beige); border-radius: 50%; animation: pulse 2s infinite; }
+        @keyframes pulse { 0% { transform: scale(1); opacity: 1; } 100% { transform: scale(1.5); opacity: 0; } }
+        header { padding: 60px 20px 30px; text-align: center; }
+        header h1 { font-size: 1.1rem; letter-spacing: 0.4rem; font-weight: 200; color: var(--h-blue); margin: 0; }
+        header p { font-size: 0.6rem; letter-spacing: 0.2rem; margin-top: 10px; color: var(--h-beige); font-weight: 500; }
+        .search-container { padding: 0 30px; position: sticky; top: 20px; z-index: 100; }
+        #guest-search { width: 100%; padding: 18px 25px; border: none; border-radius: 40px; background: var(--glass); backdrop-filter: blur(10px); box-shadow: 0 8px 32px rgba(0, 135, 170, 0.1); font-size: 1rem; outline: none; border: 1px solid rgba(255,255,255,0.5); font-family: inherit; text-align: center; }
+        #search-results { background: var(--glass); backdrop-filter: blur(10px); margin-top: 10px; border-radius: 20px; max-height: 200px; overflow-y: auto; display: none; border: 1px solid rgba(255,255,255,0.5); }
+        .result-item { padding: 15px 25px; border-bottom: 1px solid rgba(0,0,0,0.05); display: flex; justify-content: space-between; }
+        .venue-layout { max-width: 450px; margin: 0 auto; padding: 40px 20px 150px; }
+        .main-table { width: 60%; height: 40px; background: white; margin: 0 auto 50px; border: 1px solid var(--h-beige); border-radius: 5px; display: flex; justify-content: center; align-items: center; font-size: 0.7rem; letter-spacing: 2px; color: var(--h-beige); }
+        .map-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; }
+        .table-node { aspect-ratio: 1; background: white; border: 1px solid var(--h-beige); border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 0.8rem; font-weight: 300; transition: all 0.6s cubic-bezier(0.165, 0.84, 0.44, 1); }
+        .table-node.highlight { background: var(--h-blue); color: white; border-color: var(--h-blue); transform: scale(1.3); box-shadow: 0 10px 30px rgba(0, 135, 170, 0.4); font-weight: 500; }
+        .footer-card { position: fixed; bottom: -100%; left: 0; width: 100%; background: var(--glass); backdrop-filter: blur(20px); padding: 40px 25px 60px; border-radius: 40px 40px 0 0; box-shadow: 0 -10px 40px rgba(0,0,0,0.05); transition: bottom 0.7s cubic-bezier(0.165, 0.84, 0.44, 1); text-align: center; z-index: 200; border: 1px solid rgba(255,255,255,0.5); }
         .footer-card.active { bottom: 0; }
-        .close-btn { position: absolute; top: 15px; right: 20px; font-size: 1.5rem; color: var(--h-beige); cursor: pointer; }
+        .footer-card h2 { color: var(--h-blue); font-size: 2rem; margin: 10px 0; font-weight: 200; }
+        .omikuji-box { margin-top: 15px; padding: 15px; background: rgba(0, 135, 170, 0.05); border-radius: 15px; border: 1px dashed var(--h-blue); }
+        .omikuji-label { font-size: 0.6rem; color: var(--h-blue); letter-spacing: 2px; font-weight: bold; margin-bottom: 5px; display: block; }
+        .omikuji-text { font-size: 0.9rem; font-weight: 500; color: var(--h-text); }
+        .close-btn { position: absolute; top: 20px; right: 30px; font-size: 1.5rem; color: var(--h-beige); cursor: pointer; }
     </style>
 </head>
 <body>
-    <div id="loading-overlay"><div class="orchid-icon"></div><p style="letter-spacing:3px;font-size:0.7rem;color:var(--h-blue);">HALEKULANI STYLE</p></div>
-    
-    <header><h1>SEATING CHART</h1></header>
-
-    <div class="search-container">
-        <input type="text" id="guest-search" placeholder="お名前を入力（漢字・かな）" autocomplete="off">
-        <div id="search-results"></div>
+    <div id="loading-overlay">
+        <div class="orchid-icon"></div>
+        <p style="letter-spacing:5px; font-size:0.6rem; color:var(--h-blue);">THE PALACE ON THE BEACH</p>
     </div>
-
-    <div class="map-section">
-        <div class="main-table"></div>
-        <div id="floor-map"></div>
-    </div>
-
+    <header><h1>SEATING CHART</h1><p>HALEKULANI STYLE WEDDING</p></header>
+    <div class="search-container"><input type="text" id="guest-search" placeholder="Tap to Search Your Name" autocomplete="off"><div id="search-results"></div></div>
+    <div class="venue-layout"><div class="main-table">MAIN TABLE</div><div class="map-grid" id="floor-map"></div></div>
     <div class="footer-card" id="info-card">
         <span class="close-btn" onclick="closeCard()">×</span>
-        <p id="card-guest-name" style="font-weight:500;margin:0;"></p>
-        <h2 id="card-table-name" style="color:var(--h-blue);margin:10px 0;"></h2>
-        <p style="font-size:0.9rem;opacity:0.8;">本日はお越しいただきありがとうございます。<br>お席にてお待ちしております。</p>
+        <p id="card-guest-name" style="font-weight:300; letter-spacing: 1px;"></p>
+        <h2 id="card-table-name"></h2>
+        <div class="omikuji-box">
+            <span class="omikuji-label">TODAY'S MESSAGE</span>
+            <div id="omikuji-text" class="omikuji-text"></div>
+        </div>
+        <p style="font-size:0.7rem; opacity:0.6; margin-top: 20px;">Welcome to our special day!</p>
     </div>
 
     <script>
+        // 安全装置
         setTimeout(() => {
             const l = document.getElementById('loading-overlay');
-            if(l) { l.style.opacity = '0'; setTimeout(()=> l.style.display = 'none', 500); }
-        }, 1500);
+            if(l) { l.style.opacity = '0'; setTimeout(()=> l.style.display = 'none', 800); }
+        }, 2500);
 
-        // ゲストデータ
+        // 169名の確定データ
         const guests = [["川上","由樹","かわかみ","A"],["川村","昂広","かわむら","A"],["四宮","雄平","しのみや","A"],["野口","純平","のぐち","A"],["松下","隼也","まつした","A"],["三俣","孔輝","みつまた","A"],["宮本","孝輝","みやもと","A"],["秋山","裕紀","あきやま","B"],["木菱","勇太","きびし","B"],["神","奎輔","じん","B"],["高橋","広平","たかはし","B"],["鈴木","拓真","すずき","B"],["上福元","研生","かみふくもと","B"],["今井","俊之介","いまい","C"],["宇都宮","瑞生","うつのみや","C"],["白石","啓太","しらいし","C"],["橋本","真司","はしもと","C"],["山口","和樹","やまぐち","C"],["田中","李佳","たなか","D"],["藤木","加奈","ふじき","D"],["阿部","夕枝","あべ","D"],["木之下","侑奈","きのした","D"],["志藤","理賀","しとう","D"],["森松","茉利萌","もりまつ","D"],["坂巻","萌","さかまき","E"],["渋谷","知世","しぶや","E"],["谷江","花凜","たにえ","E"],["松本","ゆかり","まつもと","E"],["太田","美憂","おおた","E"],["岡崎","良々","おかざき","E"],["鶴飼","鈴菜","つるがい","F"],["夏堀","恵美里","なつぼり","F"],["荒木","真生","あらき","F"],["江口","友理","えぐち","F"],["海保","瑞季","かいほ","F"],["兼光","里奈","かねみつ","F"],["染谷","成海","そめや","F"],["西山","奈留美","にしやま","F"],["大塚","滉也","おおつか","G"],["岡田","直道","おかだ","G"],["土谷","陽太郎","つちや","G"],["松島","遼太","まつしま","G"],["山原","義朗","やまはら","G"],["石原","莉輝","いしはら","H"],["伊藤","暁","いとう","H"],["伊藤","大海","いとう","H"],["内田","圭祐","うちだ","H"],["三留","真司","みとめ","H"],["山地","崇博","やまじ","H"],["四氏","皓貴","よつうじ","H"],["越口","紗綾香","こしぐち","I"],["三村","真由","みむら","I"],["佐藤","玖海","さとう","I"],["秋山","瑞希","あきやま","I"],["佐藤","真琴","さとう","I"],["森","愛紗","もり","I"],["秋山","知秋","あきやま","J"],["浅川","久美子","あさかわ","J"],["木田","樹","きだ","J"],["西川","日香里","にしかわ","J"],["伊藤","徹","いとう","K"],["瓜生","圭一","うりう","K"],["金井","大樹","かない","K"],["菅野","隆","かんの","K"],["堀江","清仁","ほりえ","K"],["宮地","祐一","みやち","K"],["青木","渉","あおき","L"],["栗田","剛","くりた","L"],["柴田","史那","しばた","L"],["立原","幹久","たちはら","L"],["富嶋","仁也","とみしま","L"],["山川","智也","やまかわ","L"],["長沼","達典","ながぬま","M"],["前川","幸輝","まえかわ","M"],["三宅","佑","みやけ","M"],["宮田","恵理菜","みやた","M"],["村越","遼太","むらこし","M"],["森","太生","もり","M"],["小沼","弘明","おぬま","N"],["久米田","晴稀","くめた","N"],["津川","雅貴","つがわ","N"],["大野","哲","おおの","N"],["大野","由委","おおの","N"],["岡田","有生","おかだ","N"],["小林","大樹","こばやし","O"],["櫻羽","将嘉","さくらば","O"],["中村","勇貴","なかむら","O"],["程島","大貴","ほどしま","O"],["田中","潤之介","たなか","O"],["小畠","正暉","おばた","O"],["村上","太一","むらかみ","O"],["市川","裕賀","いちかわ","P"],["今川","はづき","いまがわ","P"],["佐藤","文香","さとう","P"],["種本","里紗","たねもと","P"],["樋坂","吏香","ひさか","P"],["山本","優衣子","やまもと","P"],["中山","佳保","なかやま","P"],["中山","明菜","なかやま","P"],["狩谷","隆太","かりや","Q"],["栗山","優奈","くりやま","Q"],["塩田","傑","しおた","Q"],["高橋","寛行","たかはし","Q"],["田中","宏樹","たなか","Q"],["山下","悟史","やました","Q"],["和田","健太郎","わだ","Q"],["岡田","万由子","おかだ","R"],["小宮山","健","こみやま","R"],["佐々木","斎","ささき","R"],["関","勇介","せき","R"],["村本","裕亮","むらもと","R"],["物部","龍太","ものべ","R"],["神田","泰暢","かんだ","S"],["白土","太平","しらと","S"],["船津","拓実","ふなつ","S"],["八木沢","威志","やぎさわ","S"],["大久保","樹","おおくぼ","S"],["片桐","拓重","かたぎり","S"],["木村","聖哲","きむら","S"],["森","駿介","もり","S"],["北角","琢真","きたずみ","T"],["齋藤","慧","さいとう","T"],["風間","大暢","かざま","T"],["髙柳","叡人","たかやなぎ","T"],["本田","拓也","ほんだ","T"],["三輪","広樹","みわ","T"],["村山","卓朗","むらやま","T"],["飯泉","晶弘","いいずみ","U"],["飯泉","真由美","いいずみ","U"],["飯泉","萌","いいずみ","U"],["飯泉","茉央","いいずみ","U"],["中田","治男","なかだ","U"],["中田","和子","なかだ","U"],["野崎","篤","のざき","U"],["野崎","智子","のざき","U"],["野崎","蓮","のざき","U"],["佐藤","隆一","さとう","V"],["湯淺","拓也","ゆあさ","V"],["秋元","和矩","あきもと","V"],["飛田","直通","とびた","V"],["芦澤","勇","あしざわ","V"],["中村","優樹","なかむら","W"],["萩原","大樹","はぎわら","W"],["谷津","孝太郎","やつ","W"],["新井","蒼太","あらい","W"],["鈴木","真夕子","すずき","W"],["早川","森","はやかわ","W"],["松藤","彩加","まつふじ","W"],["岩渕","梢","いわぶち","X"],["岩渕","貴紀","いわぶち","X"],["岩渕","優希","いわぶち","X"],["岩渕","光","いわぶち","X"],["岩渕","悠祐","いわぶち","X"],["岩渕","真鈴","いわぶち","X"],["清水","颯一郎","しみず","X"],["岩渕","徹","いわぶち","X"],["田中","幸夫","たなか","Y"],["石川","純子","いしかわ","Y"],["金田","由果","かねだ","Y"],["金田","千那","かねだ","Y"],["佐藤","勝子","さとう","Y"],["佐藤","友梨","さとう","Y"],["佐藤","友香","さとう","Y"],["清水","晴美","しみず","Y"],["清水","一俊","しみず","Y"],["岩渕","正弘","いわぶち","Z"],["岩渕","節子","いわぶち","Z"],["岩渕","真由美","いわぶち","Z"],["岩渕","孝広","いわぶち","Z"]];
 
-
-        // 指定の列構成
-        const rows = [
-            ["A", "B", "C", "D", "E", "F"],
-            ["G", "H", "I", "J"],
-            ["K", "L", "M", "N", "O", "P"],
-            ["Q", "R", "S", "T"],
-            ["U", "V", "W", "X", "Y", "Z"]
+        // ランダムメッセージのリスト
+        const messages = [
+            "ハンカチは何枚か持ってきましたか？スタッフに言えばバスタオル借りられます！",
+            "二人が選んだ最高の一皿、ぜひ堪能してくださいね！新郎おススメは『舌平目のボンヌファム』",
+            "この会場で一番の笑顔を見せてください！あなたの笑顔がみんなを笑顔にします！",
+            "本日はお越しいただきありがとうございます！食べて飲んで写真撮って笑って、最高の1日に！",
+            "たくさんのご縁に、乾杯！『かり～～～～』",
+            "出会いに感謝！再会に乾杯！",
+            "本日はお越しいただきありがとうございます！今日の予定：笑う飲む食べる飲む飲む泣く（任意）",
+            "メイン料理の後は、ぜひ高砂（前方の二人の席）に遊びに来てね！",
+            "今日のシャッターチャンスは…「〇ン〇〇」の瞬間です！",
+            "本日はお越しいただきありがとうございます！ミッション：『はじめまして』を言う",
+            "本日はお越しいただきありがとうございます！ミッション：今日のベスト写真を１枚撮る（後で見せて！）",
+            "本日はお越しいただきありがとうございます！ミッション：新郎新婦への一言を心の中で用意しておく！",
+            "本日は『最高の1日』にご参加いただきありがとうございます！",
+            "席が見つかったあなた：本日のMVP候補！",
+            "このメッセージが見れたあなたはラッキー！動画系はしっっっっっかり見ておいてください！",
+            "本日はお越しいただきありがとうございます！乾杯までのワクワク、あと少し！"
         ];
 
+        // マップ作成
         const mapArea = document.getElementById('floor-map');
-        rows.forEach((row, index) => {
-            const rowDiv = document.createElement('div');
-            rowDiv.className = 'table-row';
-            
-            // 各列のラベル（1st Rowなど）
-            const label = document.createElement('div');
-            label.className = 'row-label';
-            label.textContent = `LINE ${index + 1}`;
-            rowDiv.appendChild(label);
-
-            row.forEach(t => {
-                const d = document.createElement('div');
-                d.className = 'table-node'; 
-                d.id = 'table-' + t; 
-                d.textContent = t;
-                rowDiv.appendChild(d);
-            });
-            mapArea.appendChild(rowDiv);
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("").forEach(t => {
+            const d = document.createElement('div');
+            d.className = 'table-node'; d.id = 'table-' + t; d.textContent = t;
+            mapArea.appendChild(d);
         });
 
-        // 検索ロジック
         const input = document.getElementById('guest-search');
         const res = document.getElementById('search-results');
-        
         input.oninput = (e) => {
             const v = e.target.value.trim();
             if(!v) { res.style.display='none'; return; }
-            const f = guests.filter(g => (g[0]+g[1]).includes(v) || g[2].includes(v)).slice(0,8);
+            const f = guests.filter(g => (g[0]+g[1]).includes(v) || g[2].includes(v)).slice(0,5);
             if(f.length) {
-                res.innerHTML = f.map(g => `<div class="result-item" onclick="sel('${g[0]} ${g[1]}','${g[3]}')"><span>${g[0]} ${g[1]} 様</span><span style="color:var(--h-blue)">Table ${g[3]}</span></div>`).join('');
+                res.innerHTML = f.map(g => `<div class="result-item" onclick="sel('${g[0]} ${g[1]}','${g[3]}')"><span>${g[0]} ${g[1]} 様</span><span style="color:var(--h-blue); font-weight:bold;">${g[3]}</span></div>`).join('');
                 res.style.display = 'block';
             } else { res.style.display = 'none'; }
         };
 
         function sel(n, t) {
             document.querySelectorAll('.table-node').forEach(node => node.classList.remove('highlight'));
-            res.style.display = 'none'; 
-            input.value = n;
+            res.style.display = 'none'; input.value = n;
             const target = document.getElementById('table-' + t);
-            if (target) { 
-                target.classList.add('highlight'); 
-                target.scrollIntoView({ behavior: 'smooth', block: 'center' }); 
+            if (target) {
+                target.classList.add('highlight');
+                setTimeout(() => target.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300);
             }
+            
+            // ランダムメッセージを選択して表示
+            const msg = messages[Math.floor(Math.random() * messages.length)];
+            document.getElementById('omikuji-text').textContent = msg;
+
             document.getElementById('card-guest-name').textContent = n + ' 様';
             document.getElementById('card-table-name').textContent = 'TABLE ' + t;
             document.getElementById('info-card').classList.add('active');
         }
-
-        function closeCard() { 
-            document.getElementById('info-card').classList.remove('active'); 
-            document.querySelectorAll('.table-node').forEach(node => node.classList.remove('highlight'));
-            input.value = "";
-        }
+        function closeCard() { document.getElementById('info-card').classList.remove('active'); }
     </script>
 </body>
 </html>
